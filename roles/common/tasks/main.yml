@@ -1,0 +1,34 @@
+- name: create the Ubuntu user
+  user: name=ubuntu append=yes state=present createhome=yes shell=/bin/bash
+  
+- name: Allow Ubuntu user to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    line: 'ubuntu ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Setup SSH key for Ubuntu user
+  authorized_key: user=ubuntu key="{{item}}"
+  with_file:
+    - ~/.ssh/id_rsa.pub
+
+- name: "add docker repository"
+  apt_repository: repo='deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable' state=present
+
+- name: "ensure old versions of docker are purged 1"
+  apt: name=lxc-docker state=absent purge=yes
+
+- name: "ensure old versions of docker are purged 2"
+  apt: name=docker state=absent purge=yes
+
+- name: "ensure old versions of docker are purged 3"
+  apt: name=docker-engine state=absent purge=yes
+
+- name: "ensure old versions of docker are purged 4"
+  apt: name=docker.io state=absent purge=yes
+
+- name: "add docker group"
+  group: name=docker state=present
+
+- name: "add ubuntu to docker group"
+  user: name=ubuntu groups=docker append=yes

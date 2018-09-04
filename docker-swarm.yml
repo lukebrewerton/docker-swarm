@@ -1,0 +1,14 @@
+- hosts: All:Master:Worker
+
+  tasks:
+  - include_role:
+      name: common
+    when: inventory_hostname in group.All
+
+  - include_role:
+      name: swarm-master
+    when: inventory_hostname in group.Master
+
+  - include_role:
+      name: swarm-worker
+    when: inventory_hostname in group.Worker
